@@ -1,0 +1,52 @@
+/* Full viewport height */
+.admin-dashboard {
+  display: flex;
+  height: 100vh;
+  overflow: hidden; /* prevent page scroll */
+}
+
+/* Fixed Sidebar */
+.sidebar {
+  background-color: #C8A2C8; /* lilac */
+  width: 220px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  overflow-y: auto; /* scroll sidebar if content long */
+}
+
+/* Sidebar nav link hover effect */
+.nav-link {
+  transition: all 0.3s;
+}
+.nav-link:hover {
+  background-color: #b088b0;
+  border-radius: 0.25rem;
+}
+
+/* Active NavLink styling */
+.nav-link.active {
+  background-color: #a17ca1;
+  border-radius: 0.25rem;
+}
+
+/* Main content */
+.main-content {
+  margin-left: 220px; /* same as sidebar width */
+  padding: 1rem;
+  flex-grow: 1;
+  height: 100vh;
+  overflow-y: auto; /* scroll main content */
+  background-color: #faf8fa; /* optional light background */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navbar styling */
+.navbar {
+  margin-bottom: 1rem;
+}
