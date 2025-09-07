@@ -36,7 +36,7 @@ export default function AdminDashboard() {
         }}
       >
         <div className="d-flex flex-column align-items-center flex-grow-1 justify-content-center">
-          <h3 className="text-center mb-5 text-white fw-bold">AmazeCare</h3>
+       
           <ul className="nav nav-pills flex-column mb-auto w-100">
             <li className="nav-item">
               <NavLink className={navLinkClass} to="/admin/dashboard">

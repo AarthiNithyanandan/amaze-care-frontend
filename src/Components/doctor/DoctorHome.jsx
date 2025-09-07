@@ -21,8 +21,9 @@ export default function DoctorHome() {
       try {
         const res = await getAppointmentsByDoctor(doctorId);
         setAppointments(res.data);
-      } catch {
+      } catch (err) {
         setError("Failed to load appointments");
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -31,16 +32,18 @@ export default function DoctorHome() {
     fetchAppointments();
   }, [doctorId]);
 
-  const handleUpdateStatus = async (appointmentId, status) => {
-    try {
-      await updateAppointmentStatus(appointmentId, status);
+  const handleUpdateStatus = async (appointmentId, newStatus) => {
+    try {     
+      const res = await updateAppointmentStatus(appointmentId, newStatus.toLowerCase());
+      const updatedStatus = res.data?.status || newStatus.toLowerCase();
       setAppointments((prev) =>
         prev.map((app) =>
-          app.appointmentId === appointmentId ? { ...app, status } : app
+          app.appointmentId === appointmentId ? { ...app, status: updatedStatus } : app
         )
       );
-    } catch {
-      alert("Failed to update status");
+    } catch (err) {
+      console.error("Failed to update status:", err.response?.data || err.message);
+      alert("Failed to update status. Please try again.");
     }
   };
 
@@ -61,7 +64,8 @@ export default function DoctorHome() {
     try {
       const res = await getAppointmentById(appointmentId);
       setModalAppointment({ ...res.data, patientName });
-    } catch {
+    } catch (err) {
+      console.error("Failed to fetch appointment details:", err.response?.data || err.message);
       alert("Failed to fetch appointment details");
     }
   };
@@ -69,17 +73,16 @@ export default function DoctorHome() {
   const closeModal = () => setModalAppointment(null);
 
   const filteredAppointments = appointments.filter((app) => {
-    const status = app.status.toUpperCase();
+    const status = app.status?.toLowerCase() || "";
     return activeTab === "upcoming"
-      ? ["SCHEDULED", "CONFIRMED"].includes(status)
-      : status === "COMPLETED";
+      ? ["scheduled", "confirmed"].includes(status)
+      : status === "completed";
   });
 
   return (
     <div className="container-fluid" style={{ marginLeft: "100px", paddingTop: "20px" }}>
-      <h3 className="fw-bold mb-3">Welcome, Dr. {doctorName}</h3>
+      
       {error && <div className="alert alert-danger">{error}</div>}
-
       <ul className="nav nav-tabs mb-3">
         <li className="nav-item">
           <a
@@ -109,8 +112,7 @@ export default function DoctorHome() {
         <p className="text-center text-muted">No {activeTab} appointments</p>
       ) : (
         filteredAppointments.map((app) => {
-          const status = app.status.toUpperCase();
-          // Combine date + time from backend into a JS Date for display
+          const status = app.status?.toLowerCase() || "";
           const dateTime = new Date(`${app.appointmentDate}T${app.appointmentTime}`);
           const isExpanded = expandedIds.includes(app.appointmentId);
 
@@ -119,29 +121,33 @@ export default function DoctorHome() {
               className="border rounded p-3 mb-2 shadow-sm"
               key={app.appointmentId}
             >
-              {/* Small Tab View */}
               <div
                 className="d-flex justify-content-between align-items-center"
                 style={{ cursor: "pointer" }}
                 onClick={() => toggleExpand(app.appointmentId)}
               >
-                <div className="d-flex gap-3 align-items-center">
+                <div className="d-flex gap-3 align-items-center flex-wrap">
                   <FaUser />
                   <span>{app.patientName}</span>
                   <FaCalendarAlt />
                   <span>{dateTime.toLocaleDateString()}</span>
                   <FaClock />
                   <span>{dateTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                  <span className={`badge ${status === "CONFIRMED" ? "bg-success" : status === "SCHEDULED" ? "bg-warning text-dark" : "bg-secondary"}`}>
-                    {status}
+                  <span className={`badge ${
+                    status === "confirmed" ? "bg-success" :
+                    status === "scheduled" ? "bg-warning text-dark" :
+                    status === "cancelled" ? "bg-danger" :
+                    "bg-secondary"
+                  }`}>
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
                   </span>
+                  <span className="fw-semibold ms-2">ID: {app.appointmentId}</span>
                 </div>
                 <div>{isExpanded ? <FaAngleUp /> : <FaAngleDown />}</div>
               </div>
 
-              {/* Expanded View */}
               {isExpanded && (
-                <div className="mt-3 d-flex flex-wrap gap-2">
+                <div className="mt-3 d-flex flex-wrap gap-2">                                 
                   <button
                     className="btn btn-outline-secondary btn-sm"
                     onClick={() => openAppointmentModal(app.appointmentId, app.patientName)}
@@ -149,24 +155,24 @@ export default function DoctorHome() {
                     View Appointment Details
                   </button>
 
-                  {status === "SCHEDULED" && (
+                  {status === "scheduled" && (
                     <>
                       <button
                         className="btn btn-outline-success btn-sm"
-                        onClick={() => handleUpdateStatus(app.appointmentId, "CONFIRMED")}
+                        onClick={() => handleUpdateStatus(app.appointmentId, "confirmed")}
                       >
                         Accept
                       </button>
                       <button
                         className="btn btn-outline-danger btn-sm"
-                        onClick={() => handleUpdateStatus(app.appointmentId, "CANCELLED")}
+                        onClick={() => handleUpdateStatus(app.appointmentId, "cancelled")}
                       >
                         Reject
                       </button>
                     </>
                   )}
 
-                  {status === "CONFIRMED" && (
+                  {status === "confirmed" && (
                     <button
                       className="btn btn-outline-primary btn-sm"
                       onClick={() => startConsultation(app.appointmentId)}
@@ -175,7 +181,7 @@ export default function DoctorHome() {
                     </button>
                   )}
 
-                  {status === "COMPLETED" && (
+                  {status === "completed" && (
                     <button
                       className="btn btn-outline-secondary btn-sm"
                       onClick={() => {
@@ -192,14 +198,13 @@ export default function DoctorHome() {
           );
         })
       )}
-
-      {/* Modal */}
+      
       {modalAppointment && (
         <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Appointment Details</h5>
+                <h5 className="modal-title">Appointment Details (ID: {modalAppointment.appointmentId})</h5>
                 <button type="button" className="btn-close" onClick={closeModal}></button>
               </div>
               <div className="modal-body">
@@ -221,3 +226,5 @@ export default function DoctorHome() {
     </div>
   );
 }
+
+

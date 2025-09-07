@@ -1,4 +1,5 @@
-import Doctors from "../Doctors"; 
+// import Doctors from "../Doctors";
+import Doctors from "../Doctors";
 
 export default function DoctorSearch() {
   return (

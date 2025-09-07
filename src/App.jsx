@@ -13,9 +13,9 @@ import ManagePatients from './Components/admin/ManagePatients';
 import PatientDashboard from './Components/patient/PatientDashboard';
 import Home from './Components/Home';
 import DashboardHome from './Components/patient/DashboardHome';
-import DoctorAppointments from './Components/doctor/DoctorAppointments';
-import Prescriptions from './Components/patient/Prescriptions';
-import MedicalRecords from './Components/patient/MedicalRecords';
+// import DoctorAppointments from './Components/doctor/DoctorAppointments';
+
+
 import RecommendedTests from './Components/patient/RecommendedTests';
 import DoctorSearch from './Components/patient/DoctorSearch';
 import BookAppointment from './Components/patient/BookAppointment';
@@ -27,10 +27,13 @@ import AddPrescription from './Components/doctor/AddPrescription';
 import DoctorDashboard from './Components/doctor/DoctorDashboard';
 import DoctorHome from './Components/doctor/DoctorHome';
 import RecommendTests from './Components/doctor/RecommendTests';
-import Doctors from './Components/doctors';
+import Doctors from './Components/Doctors';
 import ViewMedicalRecord from './Components/doctor/ViewMedicalRecord';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
+import MyMedicalRecords from './Components/patient/MyMedicalRecords';
+import MyPrescriptions from './Components/patient/MyPrescriptions';
+import Payments from './Components/patient/Payments';
 
 
 function App() {
@@ -60,11 +63,12 @@ function App() {
 >
   <Route path="home" element={<DashboardHome />} />
   <Route path="appointments" element={<MyAppointments />} />
-  <Route path="prescriptions" element={<Prescriptions />} />
+  <Route path="prescriptions" element={<MyPrescriptions />} />
   <Route path="tests" element={<RecommendedTests />} />
-  <Route path="records" element={<MedicalRecords />} />
+  <Route path="records" element={<MyMedicalRecords />} />
   <Route path="doctors" element={<DoctorSearch />} />
   <Route path="book" element={<BookAppointment />} />
+  <Route path="payments" element={<Payments />} />
 </Route>
 
  <Route
@@ -77,7 +81,7 @@ function App() {
       >
         <Route index element={<DoctorHome />} /> 
         <Route path="home" element={<DoctorHome />} />
-        <Route path="appointments" element={<DoctorAppointments />} />
+        {/* <Route path="appointments" element={<DoctorAppointments />} /> */}
          <Route path="records" element={<AddMedicalRecords />} />
          <Route path="prescriptions" element={<AddPrescription />} />
          <Route path="tests" element={<RecommendTests />} />

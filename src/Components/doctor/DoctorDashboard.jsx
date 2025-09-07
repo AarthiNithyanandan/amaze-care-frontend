@@ -34,7 +34,7 @@ const DoctorDashboard = () => {
         <h4 className="text-center fw-bold mb-4">AmazeCare</h4>
         <ul className="nav flex-column gap-2">
           <li><Link to="home" className="btn btn-light w-100 text-start">Dashboard</Link></li>
-          <li><Link to="appointments" className="btn btn-outline-light w-100 text-start">My Appointments</Link></li>
+          {/* <li><Link to="appointments" className="btn btn-outline-light w-100 text-start">My Appointments</Link></li> */}
           <li><Link to="records" className="btn btn-outline-light w-100 text-start">Medical Records</Link></li>
           <li><Link to="prescriptions" className="btn btn-outline-light w-100 text-start">Prescriptions</Link></li>
           <li><Link to="tests" className="btn btn-outline-light w-100 text-start">Recommended Tests</Link></li>

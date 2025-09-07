@@ -1,7 +1,25 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import {
+  fetchDoctors,
+  addDoctorAPI,
+  updateDoctorAPI,
+  deleteDoctorAPI
+} from "../../services/AdminService";
 
-const API = "http://localhost:8080/api/admin";
+const setDoctorImage = (doctorId, file) => {
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const storedImages = JSON.parse(localStorage.getItem("doctorImages") || "{}");
+    storedImages[doctorId] = reader.result;
+    localStorage.setItem("doctorImages", JSON.stringify(storedImages));
+  };
+  reader.readAsDataURL(file);
+};
+
+const getDoctorImage = (doctorId) => {
+  const storedImages = JSON.parse(localStorage.getItem("doctorImages") || "{}");
+  return storedImages[doctorId] || "/assets/default-doctor.png";
+};
 
 export default function ManageDoctors() {
   const [doctors, setDoctors] = useState([]);
@@ -13,12 +31,10 @@ export default function ManageDoctors() {
     doctorId: "", name: "", speciality: "", experience: "",
     qualification: "", designation: "", email: "", passwordDoctor: "", contactNumber: ""
   });
+  const [newDoctorImage, setNewDoctorImage] = useState(null);
+  const [updateDoctorImage, setUpdateDoctorImage] = useState(null);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
-
-  const getAuthHeaders = () => ({
-    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-  });
 
   useEffect(() => { loadDoctors(); }, []);
 
@@ -31,26 +47,41 @@ export default function ManageDoctors() {
 
   const loadDoctors = async () => {
     try {
-      const res = await axios.get(`${API}/doctors`, getAuthHeaders());
+      const res = await fetchDoctors();
       setDoctors(res.data);
     } catch (err) { console.error(err); }
+  };
+
+  const handleInputChange = (form, field, value) => {
+    form === "new"
+      ? setNewDoctor(prev => ({ ...prev, [field]: value }))
+      : setUpdateDoctorForm(prev => ({ ...prev, [field]: value }));
   };
 
   const addDoctor = async () => {
     setSuccessMsg(""); setErrorMsg("");
     try {
-      await axios.post(`${API}/doctors`, newDoctor, getAuthHeaders());
+      const res = await addDoctorAPI(newDoctor);
+      if (newDoctorImage) setDoctorImage(res.data.doctorId, newDoctorImage);
+
       setSuccessMsg("Doctor added successfully!");
+      setNewDoctor({
+        name: "", speciality: "", experience: "", qualification: "",
+        designation: "", email: "", passwordDoctor: "", contactNumber: ""
+      });
+      setNewDoctorImage(null);
       loadDoctors();
-      setNewDoctor({ name: "", speciality: "", experience: "", qualification: "", designation: "", email: "", passwordDoctor: "", contactNumber: "" });
     } catch (err) { handleError(err); }
   };
 
   const updateDoctor = async () => {
     setSuccessMsg(""); setErrorMsg("");
     try {
-      await axios.put(`${API}/doctors`, updateDoctorForm, getAuthHeaders());
+      await updateDoctorAPI(updateDoctorForm);
+      if (updateDoctorImage) setDoctorImage(updateDoctorForm.doctorId, updateDoctorImage);
+
       setSuccessMsg("Doctor updated successfully!");
+      setUpdateDoctorImage(null);
       loadDoctors();
     } catch (err) { handleError(err); }
   };
@@ -58,7 +89,12 @@ export default function ManageDoctors() {
   const deleteDoctor = async (id) => {
     setSuccessMsg(""); setErrorMsg("");
     try {
-      await axios.delete(`${API}/doctors/${id}`, getAuthHeaders());
+      await deleteDoctorAPI(id);
+
+      const storedImages = JSON.parse(localStorage.getItem("doctorImages") || "{}");
+      delete storedImages[id];
+      localStorage.setItem("doctorImages", JSON.stringify(storedImages));
+
       setSuccessMsg("Doctor deleted successfully!");
       loadDoctors();
     } catch (err) { handleError(err); }
@@ -71,7 +107,8 @@ export default function ManageDoctors() {
       {successMsg && <div className="alert alert-success rounded-4">{successMsg}</div>}
       {errorMsg && <div className="alert alert-danger rounded-4">{errorMsg}</div>}
 
-      <div className="card shadow-lg rounded-4 p-4 mb-4" style={{ border: "none" }}>
+ 
+      <div className="card shadow-lg rounded-4 p-4 mb-4 border-0">
         <h5 className="fw-bold text-primary mb-3">Add Doctor</h5>
         <div className="row g-3">
           {Object.keys(newDoctor).map((field) => (
@@ -80,18 +117,20 @@ export default function ManageDoctors() {
                 className="form-control rounded-3"
                 placeholder={field.replace(/([A-Z])/g, " $1").toUpperCase()}
                 value={newDoctor[field]}
-                onChange={(e) => setNewDoctor({ ...newDoctor, [field]: e.target.value })}
+                onChange={(e) => handleInputChange("new", field, e.target.value)}
               />
             </div>
           ))}
+          <div className="col-md-4">
+            <input type="file" accept="image/*" className="form-control rounded-3"
+              onChange={(e) => setNewDoctorImage(e.target.files[0])} />
+          </div>
         </div>
-        <button className="btn btn-success mt-3 w-100 rounded-4" onClick={addDoctor}>
-          Add Doctor
-        </button>
+        <button className="btn btn-success mt-3 w-100 rounded-4" onClick={addDoctor}>Add Doctor</button>
       </div>
 
- 
-      <div className="card shadow-lg rounded-4 p-4 mb-4" style={{ border: "none" }}>
+      {/* Update Doctor */}
+      <div className="card shadow-lg rounded-4 p-4 mb-4 border-0">
         <h5 className="fw-bold text-primary mb-3">Update Doctor</h5>
         <div className="row g-3">
           {Object.keys(updateDoctorForm).map((field) => (
@@ -100,21 +139,25 @@ export default function ManageDoctors() {
                 className="form-control rounded-3"
                 placeholder={field.replace(/([A-Z])/g, " $1").toUpperCase()}
                 value={updateDoctorForm[field]}
-                onChange={(e) => setUpdateDoctorForm({ ...updateDoctorForm, [field]: e.target.value })}
+                onChange={(e) => handleInputChange("update", field, e.target.value)}
               />
             </div>
           ))}
+          <div className="col-md-4">
+            <input type="file" accept="image/*" className="form-control rounded-3"
+              onChange={(e) => setUpdateDoctorImage(e.target.files[0])} />
+          </div>
         </div>
-        <button className="btn btn-warning mt-3 w-100 rounded-4" onClick={updateDoctor}>
-          Update Doctor
-        </button>
+        <button className="btn btn-warning mt-3 w-100 rounded-4" onClick={updateDoctor}>Update Doctor</button>
       </div>
 
-      <div className="card shadow-lg rounded-4 p-3" style={{ border: "none" }}>
+      {/* Doctors Table */}
+      <div className="card shadow-lg rounded-4 p-3 border-0">
         <div className="table-responsive">
           <table className="table table-hover align-middle">
             <thead className="table-light">
               <tr>
+                <th>Image</th>
                 <th>ID</th>
                 <th>Name</th>
                 <th>Speciality</th>
@@ -126,6 +169,13 @@ export default function ManageDoctors() {
               {doctors.length > 0 ? (
                 doctors.map((d) => (
                   <tr key={d.doctorId}>
+                    <td>
+                      <img
+                        src={getDoctorImage(d.doctorId)}
+                        alt={d.name}
+                        style={{ width: "50px", height: "50px", borderRadius: "50%" }}
+                      />
+                    </td>
                     <td>{d.doctorId}</td>
                     <td className="fw-semibold">{d.name}</td>
                     <td>{d.speciality}</td>
@@ -142,9 +192,7 @@ export default function ManageDoctors() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="text-center py-4 text-muted">
-                    No doctors found
-                  </td>
+                  <td colSpan="6" className="text-center py-4 text-muted">No doctors found</td>
                 </tr>
               )}
             </tbody>

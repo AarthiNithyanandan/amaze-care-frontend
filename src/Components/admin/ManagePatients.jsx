@@ -1,8 +1,5 @@
-
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-
-const API = "http://localhost:8080/api/admin";
+import { fetchPatients, updatePatientAPI, deletePatientAPI } from "../../services/AdminService";
 
 export default function ManagePatients() {
   const [patients, setPatients] = useState([]);
@@ -12,10 +9,6 @@ export default function ManagePatients() {
   });
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
-
-  const getAuthHeaders = () => ({
-    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-  });
 
   useEffect(() => { loadPatients(); }, []);
 
@@ -28,15 +21,19 @@ export default function ManagePatients() {
 
   const loadPatients = async () => {
     try {
-      const res = await axios.get(`${API}/patients`, getAuthHeaders());
+      const res = await fetchPatients();
       setPatients(res.data);
     } catch (err) { console.error(err); }
+  };
+
+  const handleInputChange = (field, value) => {
+    setUpdatePatientForm(prev => ({ ...prev, [field]: value }));
   };
 
   const updatePatient = async () => {
     setSuccessMsg(""); setErrorMsg("");
     try {
-      await axios.put(`${API}/patients`, updatePatientForm, getAuthHeaders());
+      await updatePatientAPI(updatePatientForm);
       setSuccessMsg("Patient updated successfully!");
       loadPatients();
     } catch (err) { handleError(err); }
@@ -45,7 +42,7 @@ export default function ManagePatients() {
   const deletePatient = async (id) => {
     setSuccessMsg(""); setErrorMsg("");
     try {
-      await axios.delete(`${API}/patients/${id}`, getAuthHeaders());
+      await deletePatientAPI(id);
       setSuccessMsg("Patient deleted successfully!");
       loadPatients();
     } catch (err) { handleError(err); }
@@ -58,7 +55,7 @@ export default function ManagePatients() {
       {successMsg && <div className="alert alert-success rounded-4">{successMsg}</div>}
       {errorMsg && <div className="alert alert-danger rounded-4">{errorMsg}</div>}
 
-      <div className="card shadow-lg rounded-4 p-4 mb-5" style={{ border: "none" }}>
+      <div className="card shadow-lg rounded-4 p-4 mb-5 border-0">
         <h5 className="fw-bold text-primary mb-3">Update Patient</h5>
         <div className="row g-3">
           {Object.keys(updatePatientForm).map((field) => (
@@ -67,7 +64,7 @@ export default function ManagePatients() {
                 className="form-control rounded-3"
                 placeholder={field.replace(/([A-Z])/g, " $1").toUpperCase()}
                 value={updatePatientForm[field]}
-                onChange={(e) => setUpdatePatientForm({ ...updatePatientForm, [field]: e.target.value })}
+                onChange={(e) => handleInputChange(field, e.target.value)}
               />
             </div>
           ))}
@@ -77,7 +74,7 @@ export default function ManagePatients() {
         </button>
       </div>
 
-      <div className="card shadow-lg rounded-4 p-3" style={{ border: "none" }}>
+      <div className="card shadow-lg rounded-4 p-3 border-0">
         <div className="table-responsive">
           <table className="table table-hover align-middle">
             <thead className="table-light">

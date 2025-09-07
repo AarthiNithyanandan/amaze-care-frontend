@@ -2,9 +2,14 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
-  text-align: center;
+  /* text-align: center; */
 }
-
+body, .card-body, .card {
+  writing-mode: horizontal-tb;
+  text-orientation: initial;
+  white-space: normal;
+  word-break: normal;
+}
 .logo {
   height: 6em;
   padding: 1.5em;

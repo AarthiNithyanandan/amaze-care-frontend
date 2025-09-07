@@ -24,7 +24,7 @@ export default function NavBar() {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    background: "linear-gradient(90deg, #9b7bbd, #a884c6, #c3a1db)", // deeper lilac gradient
+    background: "linear-gradient(90deg, #9b7bbd, #a884c6, #c3a1db)", 
     color: "#2e1f33",
     boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
     zIndex: 1000,
@@ -67,10 +67,8 @@ export default function NavBar() {
         <Link to="/doctors" style={linkStyle} onMouseEnter={linkHover} onMouseLeave={linkUnhover}>
         Our doctors
         </Link>
-        {/* <Link to="/contact" style={linkStyle} onMouseEnter={linkHover} onMouseLeave={linkUnhover}>
-          Contact
-        </Link> */}
-        <Link to="/book-appointment" style={linkStyle} onMouseEnter={linkHover} onMouseLeave={linkUnhover}>
+      
+        <Link to="/login" style={linkStyle} onMouseEnter={linkHover} onMouseLeave={linkUnhover}>
           Book Appointment
         </Link>
 

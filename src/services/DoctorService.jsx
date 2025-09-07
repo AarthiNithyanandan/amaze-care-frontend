@@ -5,12 +5,11 @@ const tokenHeader = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
 });
 
-// --- Appointments ---
 export const getAppointmentsByDoctor = (doctorId) =>
   axios.get(`${API_BASE}/appointments/doctor/${doctorId}`, tokenHeader());
 
 export const updateAppointmentStatus = (appointmentId, status) =>
-  axios.put(`${API_BASE}/appointments/${appointmentId}/status?status=${status}`, null, tokenHeader());
+  axios.put(`${API_BASE}/appointments/${appointmentId}/${status}`, null, tokenHeader());
 
 export const completeAppointment = (appointmentId) =>
   axios.patch(`${API_BASE}/appointments/${appointmentId}/completed`, {}, tokenHeader());
@@ -18,14 +17,13 @@ export const completeAppointment = (appointmentId) =>
 export const getAppointmentById = (appointmentId) =>
   axios.get(`${API_BASE}/appointments/${appointmentId}`, tokenHeader());
 
-// --- Medical Records ---
+
 export const addMedicalRecord = (payload) =>
   axios.post(`${API_BASE}/medical-records/add`, payload, tokenHeader());
 
 export const getMedicalRecordByAppointment = (appointmentId) =>
   axios.get(`${API_BASE}/medical-records/appointment/${appointmentId}`, tokenHeader());
 
-// --- Prescriptions ---
 export const addPrescription = (payload) =>
   axios.post(`${API_BASE}/prescriptions/addPrescription`, payload, {
     ...tokenHeader(),
@@ -38,7 +36,6 @@ export const getPrescriptionByMedicalRecord = (recordId) =>
 export const updatePrescription = (prescriptionId, payload) =>
   axios.put(`${API_BASE}/prescriptions/${prescriptionId}`, payload, tokenHeader());
 
-// --- Recommended Tests ---
 export const addRecommendedTest = (payload) =>
   axios.post(`${API_BASE}/recommend-tests/add`, payload, tokenHeader());
 
